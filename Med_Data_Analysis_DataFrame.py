@@ -3,6 +3,8 @@ from pyspark.sql import Row
 from pyspark.sql import functions
 from pyspark.sql.types import *
 from pyspark.sql.functions import udf
+import os
+import sys
 
 # get the commodity_score for AMI 
 # based on counts of 'Yes' over a list of columns
@@ -61,15 +63,15 @@ def lace_score_ami_fun(LengthOfStay,Inpatient_visits,Commodity_Score_AMI,ED_visi
 
     return value     
 
-
-if __name__ == "__main__":
-    # Create a SparkSession (the config bit is only for Windows!)
+def main(arg):
+    # Create a SparkSession
     print('Start Data Analysis')
     spark = SparkSession.builder.appName("Sample Data Analysis").getOrCreate()
 
     # Get the raw data
-    # lines = spark.sparkContext.textFile("hdfs:///user/maria_dev/SampleDataAnalysis/Sample_med_data_2016.csv")
+    
     Dataset = spark.read.option("header","true").csv("hdfs:///user/maria_dev/SampleDataAnalysis/Sample_med_data_2016.csv") # DataFrame
+    
     AMI_diagnosis_code_list=['410.00', '410.01', '410.10', '410.11', '410.20', '410.21', '410.30', '410.31', '410.40', '410.41', '410.50', \
     '410.51', '410.60', '410.61', '410.70', '410.71', '410.80', '410.81', '410.90', '410.91']
     AMI_column_list = ('HistoryofPTCA', 'HistoryofCABG', 'Congestiveheartfailure', 'Acutecoronarysyndrome', 'Anteriormyocardialinfarction', 'Otherlocationofmyocardialinfarction', 
@@ -93,24 +95,26 @@ if __name__ == "__main__":
     # print(Dataset.show(2,truncate = True))
     # print(Dataset.filter(Dataset.diagnosis_code.isin(AMI_diagnosis_code_list)).select("encounter_id","age","diagnosis_code","Protein-caloriemalnutrition","OtherEndocrine/Metabolic/NutritionalDisorders").show(2,truncate = True))
     
-    Dataset = Dataset.withColumn('ami_commodity_score',commodity_score_ami_udf(*AMI_column_list)) \
-    .withColumn('ami_lace_score',lace_score_ami_udf('LengthOfStay','Inpatient_visits','ami_commodity_score','ED_visits'))
-    print(Dataset.filter(Dataset.diagnosis_code.isin(AMI_diagnosis_code_list)).select("encounter_id","age","diagnosis_code","Protein-caloriemalnutrition",'LengthOfStay','Inpatient_visits','ami_commodity_score','ED_visits',"ami_lace_score").show(5,truncate = True))
+    if(arg == 'AMI'):
+        Dataset = Dataset.withColumn('ami_commodity_score',commodity_score_ami_udf(*AMI_column_list)) \
+        .withColumn('ami_lace_score',lace_score_ami_udf('LengthOfStay','Inpatient_visits','ami_commodity_score','ED_visits'))
+        print(Dataset.filter(Dataset.diagnosis_code.isin(AMI_diagnosis_code_list)).select('encounter_id','race','gender','age','diagnosis_code','LengthOfStay','Inpatient_visits','ami_commodity_score','ED_visits','ami_lace_score').show(5,truncate = True))
     
-    # calculate counts and final measure score
-    total_counts = Dataset.count()
-    effective_counts = Dataset.filter("ami_lace_score>9").count()
-    AMI_score = float(effective_counts)/float(total_counts)
-    print("total_counts = ",total_counts)
-    print("effective_counts = ",effective_counts)
-    print("AMI_score = ",AMI_score)
+        # calculate counts and final measure score
+        total_counts = Dataset.count()
+        effective_counts = Dataset.filter("ami_lace_score>9").count()
+        AMI_score = float(effective_counts)/float(total_counts)
+        print("total_counts = ",total_counts)
+        print("effective_counts = ",effective_counts)
+        print("AMI_score = ",AMI_score)
+    elif(arg == None):
+        print('Not an effective measure name.')
     
-    '''
-    header = lines.first()
-    schemaString = header
 
-    '''
-
-	
     # Stop the session
     spark.stop()
+    
+
+if __name__ == "__main__":
+
+    main(sys.argv[1]) 
