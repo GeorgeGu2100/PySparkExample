@@ -10,7 +10,7 @@ from pyspark.sql.functions import udf
 def commodity_score_ami_fun(*args):
     value = 0
     for arg in args:
-        if(arg.lower() == 'yes'):
+        if(arg == 'Yes'):
             value += 1
     return value   
 
@@ -39,7 +39,7 @@ def lace_score_ami_fun(LengthOfStay,Inpatient_visits,Commodity_Score_AMI,ED_visi
         value += LengthOfStay_int
     
     # Add points due to Inpatient_visits # replace EmergencyAdmission by Inpatient_visits
-    if(Inpatient_visits.lower() == 'yes'):
+    if(Inpatient_visits == 'Yes'):
         value += 3
 
     # Add points due to Commodity_Score_AMI  
