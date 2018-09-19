@@ -1,0 +1,18 @@
+Start Data Analysis
+data loaded
+###### COPD_score ####### 
++------------+---------------+------+---+--------------+------------+----------------+--------------------+---------+---------------+
+|encounter_id|           race|gender|age|diagnosis_code|LengthOfStay|Inpatient_visits|copd_commodity_score|ED_visits|copd_lace_score|
++------------+---------------+------+---+--------------+------------+----------------+--------------------+---------+---------------+
+|       62256|AfricanAmerican|Female| 76|        518.82|           1|               0|                   6|        5|             10|
+|       73578|AfricanAmerican|  Male| 77|         491.9|          12|               0|                   5|        5|             14|
+|       84222|      Caucasian|Female| 74|        491.21|           3|               0|                   4|        0|              8|
+|      150006|AfricanAmerican|Female| 79|        493.22|           2|               0|                   4|        1|              8|
+|      325848|      Caucasian|Female| 61|        518.82|           2|               0|                  10|        0|              7|
++------------+---------------+------+---+--------------+------------+----------------+--------------------+---------+---------------+
+only showing top 5 rows
+
+None
+('total_counts: ', 1895)
+('effective_counts: ', 901)
+('COPD_score: ', 0.47546174142480213)
